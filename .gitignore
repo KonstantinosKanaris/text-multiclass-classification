@@ -1,0 +1,14 @@
+data/
+logs/
+images/
+checkpoints/
+
+.venv
+.idea
+.mypy_cache
+.vector_cache
+__pycache__
+
+.env
+.DS_Store
+*.ipynb
