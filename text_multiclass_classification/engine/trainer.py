@@ -79,6 +79,12 @@ class TrainingExperiment:
         self.delta: float = delta
         self.resume: bool = resume
         self.writer: Optional[torch.utils.tensorboard.writer.SummaryWriter] = writer
+        self.early_stopping: EarlyStopping = EarlyStopping(
+            patience=self.patience,
+            delta=self.delta,
+            path=self.checkpoint_path,
+            verbose=True,
+        )
 
     def train(
         self,
@@ -141,13 +147,6 @@ class TrainingExperiment:
             "val_acc": [],
         }
 
-        early_stopping = EarlyStopping(
-            patience=self.patience,
-            delta=self.delta,
-            path=self.checkpoint_path,
-            verbose=True,
-        )
-
         start_epoch = 0
         if self.resume:
             checkpoint = load_general_checkpoint(
@@ -202,13 +201,13 @@ class TrainingExperiment:
                 )
                 self.writer.close()
 
-            early_stopping(
+            self.early_stopping(
                 epoch=epoch,
                 model=self.model,
                 optimizer=self.optimizer,
                 val_loss=val_loss,
             )
-            if early_stopping.early_stop:
+            if self.early_stopping.early_stop:
                 logger.info("Training stopped due to early stopping.")
                 break
             else:

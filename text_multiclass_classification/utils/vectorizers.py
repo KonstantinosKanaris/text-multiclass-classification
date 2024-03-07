@@ -55,7 +55,7 @@ class SequenceVectorizer:
 
         out_vector = torch.zeros(size=(vector_length,), dtype=torch.int64)
         out_vector[: len(indices)] = torch.tensor(indices, dtype=torch.int64)
-        out_vector[len(indices) :] = self.text_vocab.mask_index
+        out_vector[len(indices) :] = self.text_vocab.mask_index  # noqa: E203
 
         return out_vector
 

@@ -23,7 +23,7 @@ repos:
     -   id: mypy
         args: [--ignore-missing-imports]
         stages: [commit]
-        additional_dependencies: [types-PyYAML]
+        additional_dependencies: [types-PyYAML, types-requests]
 -   repo: https://github.com/pycqa/isort
     rev: 5.13.2
     hooks:

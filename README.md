@@ -13,7 +13,7 @@
 
 ## Overview 🔍
 
-A simple framework for text multi-class classification projects using PyTorch. 
+A simple framework for text multi-class classification projects using PyTorch.
 
 ### Project Structure 🌲
 ```

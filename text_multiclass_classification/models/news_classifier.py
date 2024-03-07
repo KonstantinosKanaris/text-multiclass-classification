@@ -77,8 +77,8 @@ class NewsClassifier(nn.Module):
              torch.Tensor: The resulting tensor. The output
                 shape of the tensor should be (batch_size, num_classes).
         """
-        # After the embedding layer the shape is [batch_size, seq_len, emb_dim]
-        # but the conv1d layers require input shape [batch_size, input_channels, seq_len]
+        # After the embedding layer the shape is [batch, seq_len, emb_dim]
+        # but the conv1d layers require input shape [batch, input_channels, seq_len]
         # that's why we permute the shape in order to become (in our case)
         # [batch_size, emb_dim, seq_len]
         x_embedded = self.emb(x).permute(0, 2, 1)
