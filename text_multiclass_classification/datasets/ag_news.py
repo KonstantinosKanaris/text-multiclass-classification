@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Tuple
+
 import pandas as pd
 import torch
 from torch.utils.data import Dataset
@@ -71,7 +73,7 @@ class NewsDataset(Dataset):
         save_path: str,
     ) -> NewsDataset:
         """Entry point for instantiating the `NewsDataset` class
-        from a url where the data is located in as a csv file.
+        from an url where the data is located at, as a csv file.
 
         Args:
             news_csv_url (str): The url to the dataset's csv file.
@@ -86,19 +88,25 @@ class NewsDataset(Dataset):
     def __len__(self) -> int:
         return len(self.news_df)
 
-    def __getitem__(self, index: int):
+    def __getitem__(self, index: int) -> Tuple[torch.Tensor, torch.Tensor]:
         """The primary entry point method for PyTorch dataset.
 
         Args:
             index (int): The index to the data point.
 
         Returns:
-            Tuple[torch.Tensor, torch.Tensor]: A tuple of the data point's
-                text vector and category index.
+            Tuple[torch.Tensor, torch.Tensor]: A tuple holding the
+                data point's:
+                .. code-block:: text
+
+                    features (X)
+                    label (y)
         """
         row = self.news_df.iloc[index]
 
-        title_vector = self._vectorizer.vectorize(row.title, self._max_seq_length)
+        title_vector, vec_length = self._vectorizer.vectorize(
+            row.title, self._max_seq_length
+        )
         category_index = self._vectorizer.category_vocab.lookup_token(row.category)
 
         return title_vector, torch.tensor(data=category_index, dtype=torch.int64)

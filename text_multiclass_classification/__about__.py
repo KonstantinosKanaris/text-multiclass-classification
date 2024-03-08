@@ -2,7 +2,6 @@
     e.g., *title*, *version*, *summary* etc.
 """
 
-import os
 from datetime import datetime
 
 __MAJOR__ = 0

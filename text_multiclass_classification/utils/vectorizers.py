@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import string
 from collections import Counter
+from typing import Tuple
 
 import pandas as pd
 import torch
@@ -28,7 +29,7 @@ class SequenceVectorizer:
         self.text_vocab: SequenceVocabulary = text_vocab
         self.category_vocab: Vocabulary = category_vocab
 
-    def vectorize(self, text: str, vector_length=-1) -> torch.Tensor:
+    def vectorize(self, text: str, vector_length=-1) -> Tuple[torch.Tensor, int]:
         """Creates a 1D fixed-length tensor (vector representation)
         for the provided text.
 
@@ -44,7 +45,8 @@ class SequenceVectorizer:
                 text (default=-1).
 
         Returns:
-            torch.Tensor: The vectorized text.
+            Tuple[torch.Tensor, int]: The vectorized text and an integer
+                indicating the vector length.
         """
         indices = [self.text_vocab.begin_seq_index]
         indices.extend(self.text_vocab.lookup_token(token) for token in text.split(" "))
@@ -57,7 +59,7 @@ class SequenceVectorizer:
         out_vector[: len(indices)] = torch.tensor(indices, dtype=torch.int64)
         out_vector[len(indices) :] = self.text_vocab.mask_index  # noqa: E203
 
-        return out_vector
+        return out_vector, len(indices)
 
     @classmethod
     def from_dataframe(

@@ -1,0 +1,43 @@
+#---------------------------------------------------------------------------------
+# - checkpoints_dir         : The directory path to save checkpoints.
+# - tracking_dir            : The directory where the results of the experiments
+# - experiments             : List of training experiments.
+#                             will be stored.
+# - data                    : Train and test data paths.
+# - train_csv               : The csv path to the train data.
+# - hyperparameters         : Training hyperparameters.
+# - num_epochs              : An integer indicating how many epochs to train for.
+# - batch_size              : How many samples per batch to load.
+# - optimizer               : Hyperparameters for the optimizer.
+# - learning_rate           : The learning rate of the optimizer.
+# - optimizer_name          : The name of the optimizer to use for training.
+#                             Available optimizers: `sgd`, `adam`.
+# - weight_decay            : L2 penalty for the optimizers.
+# - early_stopping          : Hyperparameters for early stopping.
+# - patience                : Number of epochs to wait before early stopping.
+# - delta                   : Minimum change in monitored quantity to qualify
+#                             as an improvement.
+# - model_name              : The name of the model to train.
+# - embeddings_path         : Path to a pre-trained embeddings file.
+#---------------------------------------------------------------------------------
+checkpoints_dir: ./checkpoints
+tracking_dir: ./experiments/
+experiments:
+  -
+    name: experiment_1
+    data:
+      train_csv: ./data/ag_news/processed/ag_news.csv
+    hyperparameters:
+      general:
+        num_epochs: 20
+        batch_size: 32
+      optimizer:
+        optimizer_name: Adam
+        learning_rate: 0.001
+        weight_decay: 0
+      early_stopping:
+        patience: 2
+        delta: 0.05
+      model:
+        model_name: news_classifier
+        embeddings_path: ./.vector_cache/glove.6B.100d.txt

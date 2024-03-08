@@ -1,0 +1,22 @@
+checkpoints_dir: ./checkpoints
+tracking_dir: ./experiments/
+experiments:
+  -
+    name: experiment_1
+    data:
+      train_csv: ./data/ag_news/processed/ag_news.csv
+
+    hyperparameters:
+      general:
+        num_epochs: 20
+        batch_size: 32
+      optimizer:
+        optimizer_name: Adam
+        learning_rate: 0.001
+        weight_decay: 0
+      early_stopping:
+        patience: 2
+        delta: 0.05
+      model:
+        model_name: news_classifier
+        embeddings_path: ./.vector_cache/glove.6B.100d.txt

@@ -84,7 +84,7 @@ def load_yaml_file(filepath: str) -> Any:
 
     with open(file=filepath, mode="r", encoding="utf-8") as f:
         config = yaml.safe_load(stream=f)
-    logger.info("Configuration file loaded successfully.")
+    logger.info("Configuration file loaded successfully.\n")
 
     return config
 

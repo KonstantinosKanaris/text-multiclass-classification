@@ -71,7 +71,7 @@ class TrainingExperiment:
     ) -> None:
         self.model: torch.nn.Module = model
         self.loss_fn: torch.nn.Module = loss_fn
-        self.accuracy_fn: torchmetrics.Metric = accuracy_fn
+        self.accuracy_fn: torchmetrics.Metric = accuracy_fn.to(self.__class__.DEVICE)
         self.optimizer: torch.optim.Optimizer = optimizer
         self.checkpoint_path: str = checkpoint_path
         self.epochs: int = epochs
@@ -122,22 +122,6 @@ class TrainingExperiment:
                 A dictionary containing the training and testing metrics including
                 'train_loss', 'train_acc', 'val_loss', and 'val_acc'.
         """
-        logger.info("-------------------------- Training --------------------------")
-        logger.info(
-            f"Training on {len(train_dataloader)} batches of "
-            f"{train_dataloader.batch_size} samples."
-        )
-        logger.info(
-            f"Evaluating on {len(val_dataloader)} batches of "
-            f"{val_dataloader.batch_size} samples."
-        )
-        logger.info(f"Training model: {self.model.__class__.__name__}")
-        logger.info(f"Optimizer: {self.optimizer.__class__.__name__}")
-        logger.info(f"Loss function: {self.loss_fn.__class__.__name__}")
-        logger.info("Early Stopping: Yes")
-        logger.info(f"Target device: {self.__class__.DEVICE}")
-        logger.info(f"Epochs: {self.epochs}\n")
-
         self.model.to(self.__class__.DEVICE)
 
         results: Dict[str, List[float]] = {
@@ -246,6 +230,7 @@ class TrainingExperiment:
         # Loop through data loader data batches
         for batch, (X, y) in enumerate(dataloader):
             # Send the data to the target device
+
             X, y = X.to(self.__class__.DEVICE), y.to(self.__class__.DEVICE)
 
             # 1. Forward pass (returns logits)

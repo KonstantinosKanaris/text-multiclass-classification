@@ -38,9 +38,17 @@ def basic_text_normalization(text: str) -> str:
     """Basic normalization for a provided text.
 
     Normalization includes
-    - lowercasing
-    - adding whitespace around punctuation symbols
-    - replace multiple spaces with single space
+    .. code-block:: text
+
+        - lowercasing
+        - adding whitespace around punctuation symbols
+        - replace multiple spaces with single space
+
+    Args:
+        text (str): Input text for normalizing.
+
+    Returns:
+        str: The normalized text.
     """
     text = text.lower()
     text = re.sub(pattern=r"([.,!?])", repl=r" \1 ", string=text)

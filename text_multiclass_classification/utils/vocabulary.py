@@ -23,7 +23,6 @@ class Vocabulary:
         self,
         token_to_idx: Optional[Dict[str, int]] = None,
     ) -> None:
-
         if token_to_idx is None:
             token_to_idx = {}
         self.token_to_idx: Dict[str, int] = token_to_idx
@@ -176,8 +175,8 @@ class SequenceVocabulary(Vocabulary):
                 the `END-OF-SEQUENCE` token. Defaults to `<END>`.
         """
         super().__init__(token_to_idx=token_to_idx)
-        self._unk_token: str = unk_token
         self._mask_token: str = mask_token
+        self._unk_token: str = unk_token
         self._begin_seq_token: str = begin_seq_token
         self._end_seq_token: str = end_seq_token
 
