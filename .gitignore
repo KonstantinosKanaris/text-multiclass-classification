@@ -9,9 +9,8 @@ experiments/
 .mypy_cache
 .vector_cache
 __pycache__
+./configs/my_experiments.yaml
 
 .env
 .DS_Store
 *.ipynb
-
-configs/my_experiments.yaml
