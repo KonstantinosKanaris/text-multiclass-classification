@@ -8,6 +8,7 @@ import torch
 import torch.utils.data
 import torch.utils.tensorboard
 import torchmetrics
+from prefetch_generator import BackgroundGenerator
 from tqdm.auto import tqdm
 
 from text_multiclass_classification import logger
@@ -228,7 +229,7 @@ class TrainingExperiment:
         # pbar = enumerate(BackgroundGenerator(dataloader))
 
         # Loop through data loader data batches
-        for batch, (X, y) in enumerate(dataloader):
+        for batch, (X, y) in enumerate(BackgroundGenerator(dataloader)):
             # Send the data to the target device
 
             X, y = X.to(self.__class__.DEVICE), y.to(self.__class__.DEVICE)
@@ -287,7 +288,7 @@ class TrainingExperiment:
         # Turn on inference context manager
         with torch.inference_mode():
             # Loop through data loader data batches
-            for batch, (X, y) in enumerate(dataloader):
+            for batch, (X, y) in enumerate(BackgroundGenerator(dataloader)):
                 # Send data to the target device
                 X, y = X.to(self.__class__.DEVICE), y.to(self.__class__.DEVICE)
 
