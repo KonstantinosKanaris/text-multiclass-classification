@@ -8,10 +8,10 @@ from torch import nn
 from torch.utils.data import DataLoader, SubsetRandomSampler
 
 from text_multiclass_classification import logger
-from text_multiclass_classification.engine.trainer import TrainingExperiment
-from text_multiclass_classification.utils.aux import Timer, create_writer
 from text_multiclass_classification.datasets.ag_news import NewsDataset
-from text_multiclass_classification.models.news_classifier import NewsClassifierWithCNN, NewsClassifierWithRNN
+from text_multiclass_classification.engine.trainer import TrainingExperiment
+from text_multiclass_classification.models.news_classifier import NewsClassifierWithRNN
+from text_multiclass_classification.utils.aux import Timer, create_writer
 from text_multiclass_classification.utils.embeddings import PreTrainedEmbeddings
 
 
@@ -152,7 +152,9 @@ class ExperimentManager:
             ...     }
             ... }
         """
-        dataset = NewsDataset.load_dataset_from_csv(news_csv=experiment["data"]["train_csv"])
+        dataset = NewsDataset.load_dataset_from_csv(
+            news_csv=experiment["data"]["train_csv"]
+        )
         vectorizer = dataset.get_vectorizer()
 
         embeddings_path = experiment["hyperparameters"]["model"]["embeddings_path"]
@@ -179,7 +181,7 @@ class ExperimentManager:
         optimizer = torch.optim.SGD(
             params=model.parameters(),
             lr=experiment["hyperparameters"]["optimizer"]["learning_rate"],
-            weight_decay=experiment["hyperparameters"]["optimizer"]["weight_decay"]
+            weight_decay=experiment["hyperparameters"]["optimizer"]["weight_decay"],
         )
         loss_fn = nn.CrossEntropyLoss()
         accuracy_fn = torchmetrics.Accuracy(
@@ -208,7 +210,7 @@ class ExperimentManager:
             patience=experiment["hyperparameters"]["early_stopping"]["patience"],
             delta=experiment["hyperparameters"]["early_stopping"]["delta"],
             resume=self.resume_from_checkpoint,
-            writer=writer
+            writer=writer,
         )
 
         ssf = StratifiedShuffleSplit(n_splits=2, test_size=0.2)
@@ -217,7 +219,7 @@ class ExperimentManager:
         logger.info(f"Device: {'cuda' if torch.cuda.is_available() else 'cpu'}\n")
         with Timer() as t:
             for fold, (train_ids, val_ids) in enumerate(
-                    ssf.split(X=dataset, y=dataset.news_df.category)
+                ssf.split(X=dataset, y=dataset.news_df.category)
             ):
                 logger.info(f"Fold: {fold+1}")
                 train_dataloader = DataLoader(
@@ -246,5 +248,7 @@ class ExperimentManager:
                     f"{val_dataloader.batch_size} samples."
                 )
 
-                trainer.train(train_dataloader=train_dataloader, val_dataloader=val_dataloader)
+                trainer.train(
+                    train_dataloader=train_dataloader, val_dataloader=val_dataloader
+                )
         logger.info(f"Training took {t.elapsed} seconds.")

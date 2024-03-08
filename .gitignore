@@ -2,6 +2,7 @@ data/
 logs/
 images/
 checkpoints/
+experiments/
 
 .venv
 .idea
