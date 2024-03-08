@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader, SubsetRandomSampler
 from text_multiclass_classification import logger
 from text_multiclass_classification.datasets.ag_news import NewsDataset
 from text_multiclass_classification.engine.trainer import TrainingExperiment
-from text_multiclass_classification.models.news_classifier import NewsClassifierWithRNN
+from text_multiclass_classification.factories.client import Client
 from text_multiclass_classification.utils.aux import Timer, create_writer
 from text_multiclass_classification.utils.embeddings import PreTrainedEmbeddings
 
@@ -38,6 +38,8 @@ class ExperimentManager:
         resume_from_checkpoint (bool):
             If 'True' the selected model will resume training
             from the last selected checkpoint. Defaults to `False.
+        client: (Client):
+            A factory client to select model, and optimizer.
 
     Example:
 
@@ -51,10 +53,7 @@ class ExperimentManager:
         ...         {
         ...             'name': 'experiment_1',
         ...             'data': {
-        ...                 'paths': {
-        ...                     'train_dir': './data/train',
-        ...                     'test_dir': './data/test'
-        ...                 }
+        ...                 'train_csv': 'path_to_csv_dir/csv_file.csv'
         ...             },
         ...             'hyperparameters': {
         ...                 'general': {
@@ -65,14 +64,14 @@ class ExperimentManager:
         ...                     'optimizer_name': 'adam',
         ...                     'learning_rate': 0.001,
         ...                     'weight_decay': 0.3,
-        ...                     'betas': (0.9, 0.999)
         ...                 },
         ...                 'early_stopping': {
         ...                     'patience': 3,
         ...                     'delta': 0.05
         ...                 },
         ...                 'model': {
-        ...                     'model_name': 'efficient_net_b0'
+        ...                     'model_name': 'news_classifier_rnn',
+        ...                     'embeddings_path': 'glove_embeddings/glove.6B.100d.txt'
         ...                 }
         ...             }
         ...         },
@@ -88,6 +87,8 @@ class ExperimentManager:
     ) -> None:
         self.config: Dict[str, Any] = config
         self.resume_from_checkpoint: bool = resume_from_checkpoint
+
+        self.client: Client = Client()
 
     def run_experiments(self) -> None:
         """Runs multiple experiments with PyTorch models on custom data.
@@ -168,21 +169,19 @@ class ExperimentManager:
         else:
             input_embeddings = None
 
-        model = NewsClassifierWithRNN(
-            embedding_size=100,
-            num_embeddings=len(vectorizer.text_vocab),
+        model = self.client.models_client(
+            model_name=experiment["hyperparameters"]["model"]["model_name"],
             num_classes=len(vectorizer.category_vocab.token_to_idx),
-            hidden_size=100,
-            dropout=0.1,
+            num_embeddings=len(vectorizer.text_vocab),
             pretrained_embeddings=input_embeddings,
-            padding_idx=0,
         )
 
-        optimizer = torch.optim.SGD(
-            params=model.parameters(),
-            lr=experiment["hyperparameters"]["optimizer"]["learning_rate"],
+        optimizer = self.client.optimizers_client(
+            model_params=model.parameters(),
+            learning_rate=experiment["hyperparameters"]["optimizer"]["learning_rate"],
             weight_decay=experiment["hyperparameters"]["optimizer"]["weight_decay"],
         )
+
         loss_fn = nn.CrossEntropyLoss()
         accuracy_fn = torchmetrics.Accuracy(
             task="multiclass", num_classes=len(vectorizer.category_vocab.token_to_idx)

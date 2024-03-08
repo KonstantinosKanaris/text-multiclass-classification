@@ -12,12 +12,13 @@ class NewsClassifierWithCNN(nn.Module):
     Args:
         num_embeddings (int): Number of embedding vectors.
             Usually the length of vocabulary.
-        embedding_size (int): Size of the embedding vectors.
-        num_channels (int): Number of convolutional kernels
-            per layer.
-        hidden_size (int): The size of hidden dimension for
-            the linear layers.
         num_classes (int): The number of classification classes.
+        embedding_size (int, optional): Size of the embedding vectors
+            (default=100).
+        num_channels (int, optional): Number of convolutional kernels
+            per layer (default=100).
+        hidden_size (int, optional): The size of hidden dimension for
+            the linear layers (default=100).
         dropout (float, optional): The dropout value (default=0.1).
         padding_idx (int, optional): An index representing a null
             position (default=0).
@@ -28,10 +29,10 @@ class NewsClassifierWithCNN(nn.Module):
     def __init__(
         self,
         num_embeddings: int,
-        embedding_size: int,
-        num_channels: int,
-        hidden_size: int,
         num_classes: int,
+        embedding_size: int = 100,
+        num_channels: int = 100,
+        hidden_size: int = 100,
         dropout: float = 0.1,
         padding_idx: int = 0,
         pretrained_embeddings: Optional[torch.Tensor] = None,
@@ -117,10 +118,11 @@ class NewsClassifierWithRNN(nn.Module):
     Args:
         num_embeddings (int): Number of embedding vectors.
             Usually the length of the vocabulary.
-        embedding_size (int): Size of the embedding vectors.
         num_classes (int): The number of classification classes.
-        hidden_size (int): The size of hidden dimension for
-            the both linear and rnn layers.
+        embedding_size (int, optional): Size of the embedding vectors
+            (default=100).
+        hidden_size (int, optional): The size of hidden dimension for
+            the both linear and rnn layers (default=100).
         batch_first (bool, optional): Whether the input tensors
             will have batch or the sequence size on 0th dimension.
             Defaults to `True`.
@@ -134,9 +136,9 @@ class NewsClassifierWithRNN(nn.Module):
     def __init__(
         self,
         num_embeddings: int,
-        embedding_size: int,
         num_classes: int,
-        hidden_size: int,
+        embedding_size: int = 100,
+        hidden_size: int = 100,
         batch_first: bool = True,
         dropout: float = 0.1,
         padding_idx: int = 0,

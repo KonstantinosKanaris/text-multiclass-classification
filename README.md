@@ -40,6 +40,10 @@ text-multiclass-classification
     ├── engine
     │   ├── __init__.py
     │   └── trainer.py          | Contains the training process
+    ├── factories
+    │   ├── __init__.py
+    │   ├── client.py          | Interacts with the factories to return different instances of models, optimizers, and transforms
+    │   └── factories.py       | Contains factory classes for creating different types of models, optimizers, and transforms
     ├── logger
     │   └── logging.ini         | Configuration file for Python's logging module
     ├── models                        | A sub-package containing definitions for different model architectures
@@ -47,10 +51,13 @@ text-multiclass-classification
     │   └── news_classifier.py
     └── utils
         ├── __init__.py
-        ├── aux.py
-        ├── embeddings.py
-        ├── vectorizers.py
-        └── vocabulary.py
+        ├── aux.py                   | Auxilliary functions/classes such as EarlyStopping
+        ├── constants.py             | Defines constants
+        ├── custom_exceptions.py     | Implements custom exceptions
+        ├── embeddings.py            | Wrapper for pre-trained embeddigns and their use
+        ├── error_messages.py        | Contains custom error messages
+        ├── vectorizers.py           | Vectorizes a text sequence to numbers
+        └── vocabulary.py            
 ```
 
 
@@ -59,6 +66,8 @@ text-multiclass-classification
 * **Customizable Experiments**: Define multiple experiments easily by configuring model
 architecture, optimizer, learning rate, batch size, and other hyperparameters in a YAML
 configuration file
+* **Customizable Models**: Easily integrate custom PyTorch models into your classification
+tasks, allowing for seamless experimentation with novel architectures and configurations
 * **Experiment Tracking**: Utilize TensorBoard for real-time visualization of training
 metrics and performance evaluation, enabling easy monitoring of experiment progress
 * **Checkpointing**: Ensure training progress is saved with checkpointing functionality,
