@@ -27,11 +27,11 @@ class ModelsFactory:
         self._models[name] = model
 
     def get_model(
-            self,
-            name: str,
-            num_classes: int,
-            num_embeddings: int,
-            pretrained_embeddings: Optional[torch.Tensor] = None
+        self,
+        name: str,
+        num_classes: int,
+        num_embeddings: int,
+        pretrained_embeddings: Optional[torch.Tensor] = None,
     ) -> Any:
         """
         Instantiates and returns a PyTorch model by name.
@@ -51,7 +51,7 @@ class ModelsFactory:
         return model(
             num_classes=num_classes,
             num_embeddings=num_embeddings,
-            pretrained_embeddings=pretrained_embeddings
+            pretrained_embeddings=pretrained_embeddings,
         )
 
 

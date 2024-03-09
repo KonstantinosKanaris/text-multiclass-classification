@@ -57,7 +57,7 @@ text-multiclass-classification
         ├── embeddings.py            | Wrapper for pre-trained embeddigns and their use
         ├── error_messages.py        | Contains custom error messages
         ├── vectorizers.py           | Vectorizes a text sequence to numbers
-        └── vocabulary.py            
+        └── vocabulary.py
 ```
 
 

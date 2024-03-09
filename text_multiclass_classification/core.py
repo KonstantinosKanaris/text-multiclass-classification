@@ -1,7 +1,9 @@
 import os
 from typing import Any, Dict
 
+import mlflow
 import torch
+import torchinfo
 import torchmetrics
 from sklearn.model_selection import StratifiedShuffleSplit
 from torch import nn
@@ -11,7 +13,7 @@ from text_multiclass_classification import logger
 from text_multiclass_classification.datasets.ag_news import NewsDataset
 from text_multiclass_classification.engine.trainer import TrainingExperiment
 from text_multiclass_classification.factories.client import Client
-from text_multiclass_classification.utils.aux import Timer, create_writer
+from text_multiclass_classification.utils.aux import Timer
 from text_multiclass_classification.utils.embeddings import PreTrainedEmbeddings
 
 
@@ -187,12 +189,6 @@ class ExperimentManager:
             task="multiclass", num_classes=len(vectorizer.category_vocab.token_to_idx)
         )
 
-        writer = create_writer(
-            start_dir=self.config["tracking_dir"],
-            experiment_name=experiment["name"],
-            model_name=experiment["hyperparameters"]["model"]["model_name"],
-        )
-
         model_name = (
             f"{experiment['name']}_"
             f"{experiment['hyperparameters']['model']['model_name']}.pth"
@@ -209,45 +205,76 @@ class ExperimentManager:
             patience=experiment["hyperparameters"]["early_stopping"]["patience"],
             delta=experiment["hyperparameters"]["early_stopping"]["delta"],
             resume=self.resume_from_checkpoint,
-            writer=writer,
         )
 
-        ssf = StratifiedShuffleSplit(n_splits=2, test_size=0.2)
+        with mlflow.start_run():
+            training_parameters = {
+                "nam": experiment["name"],
+                "epochs": experiment["hyperparameters"]["general"]["num_epochs"],
+                "batch_size": experiment["hyperparameters"]["general"]["batch_size"],
+                "learning_rate": experiment["hyperparameters"]["optimizer"][
+                    "learning_rate"
+                ],
+                "patience": experiment["hyperparameters"]["early_stopping"]["patience"],
+                "delta": experiment["hyperparameters"]["early_stopping"]["delta"],
+                "weight_decay": experiment["hyperparameters"]["optimizer"][
+                    "weight_decay"
+                ],
+                "optimizer": optimizer.__class__.__name__,
+                "loss_function": loss_fn.__class__.__name__,
+                "metric_function": accuracy_fn.__class__.__name__,
+            }
 
-        logger.info("-------------------------- Training --------------------------")
-        logger.info(f"Device: {'cuda' if torch.cuda.is_available() else 'cpu'}\n")
-        with Timer() as t:
-            for fold, (train_ids, val_ids) in enumerate(
-                ssf.split(X=dataset, y=dataset.news_df.category)
-            ):
-                logger.info(f"Fold: {fold+1}")
-                train_dataloader = DataLoader(
-                    dataset=dataset,
-                    batch_size=experiment["hyperparameters"]["general"]["batch_size"],
-                    drop_last=True,
-                    num_workers=os.cpu_count() if os.cpu_count() else 0,
-                    pin_memory=True,
-                    sampler=SubsetRandomSampler(train_ids),
-                )
-                val_dataloader = DataLoader(
-                    dataset=dataset,
-                    batch_size=experiment["hyperparameters"]["general"]["batch_size"],
-                    drop_last=True,
-                    num_workers=os.cpu_count() if os.cpu_count() else 0,
-                    pin_memory=True,
-                    sampler=SubsetRandomSampler(val_ids),
-                )
+            # Log training params
+            mlflow.log_params(params=training_parameters)
 
-                logger.info(
-                    f"Training on {len(train_dataloader)} batches of "
-                    f"{train_dataloader.batch_size} samples."
-                )
-                logger.info(
-                    f"Evaluating on {len(val_dataloader)} batches of "
-                    f"{val_dataloader.batch_size} samples."
-                )
+            # Log model summary
+            with open(file="./model_summary.txt", mode="w") as f:
+                f.write(str(torchinfo.summary(model)))
+            mlflow.log_artifact(local_path="./model_summary.txt")
 
-                trainer.train(
-                    train_dataloader=train_dataloader, val_dataloader=val_dataloader
-                )
-        logger.info(f"Training took {t.elapsed} seconds.")
+            ssf = StratifiedShuffleSplit(n_splits=2, test_size=0.2)
+
+            logger.info(
+                "-------------------------- Training --------------------------"
+            )
+            logger.info(f"Device: {'cuda' if torch.cuda.is_available() else 'cpu'}\n")
+            with Timer() as t:
+                for fold, (train_ids, val_ids) in enumerate(
+                    ssf.split(X=dataset, y=dataset.news_df.category)
+                ):
+                    logger.info(f"Fold: {fold+1}")
+                    train_dataloader = DataLoader(
+                        dataset=dataset,
+                        batch_size=experiment["hyperparameters"]["general"][
+                            "batch_size"
+                        ],
+                        drop_last=True,
+                        num_workers=os.cpu_count() if os.cpu_count() else 0,
+                        pin_memory=True,
+                        sampler=SubsetRandomSampler(train_ids),
+                    )
+                    val_dataloader = DataLoader(
+                        dataset=dataset,
+                        batch_size=experiment["hyperparameters"]["general"][
+                            "batch_size"
+                        ],
+                        drop_last=True,
+                        num_workers=os.cpu_count() if os.cpu_count() else 0,
+                        pin_memory=True,
+                        sampler=SubsetRandomSampler(val_ids),
+                    )
+
+                    logger.info(
+                        f"Training on {len(train_dataloader)} batches of "
+                        f"{train_dataloader.batch_size} samples."
+                    )
+                    logger.info(
+                        f"Evaluating on {len(val_dataloader)} batches of "
+                        f"{val_dataloader.batch_size} samples."
+                    )
+
+                    trainer.train(
+                        train_dataloader=train_dataloader, val_dataloader=val_dataloader
+                    )
+            logger.info(f"Training took {t.elapsed} seconds.")

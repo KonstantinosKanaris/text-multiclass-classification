@@ -1,9 +1,10 @@
 """
-Contains a class for training and testing a PyTorch model.
+Contains a class for training and validation a PyTorch model.
 """
 
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
+import mlflow
 import torch
 import torch.utils.data
 import torch.utils.tensorboard
@@ -39,9 +40,6 @@ class TrainingExperiment:
         delta (float, optional):
             Early stopping specific. Minimum change in monitored
             quantity to qualify as an improvement. (default=0).
-        writer (torch.utils.tensorboard.writer.SummaryWriter, optional):
-            Optional 'SummaryWriter' instance for logging training metrics
-            to TensorBoard. Defaults to `None`.
         resume (bool): If True, resumes training from the specified checkpoint.
             Defaults to `False`.
 
@@ -68,7 +66,6 @@ class TrainingExperiment:
         patience: int = 5,
         delta: float = 0,
         resume: bool = False,
-        writer: Optional[torch.utils.tensorboard.writer.SummaryWriter] = None,
     ) -> None:
         self.model: torch.nn.Module = model
         self.loss_fn: torch.nn.Module = loss_fn
@@ -79,7 +76,6 @@ class TrainingExperiment:
         self.patience: int = patience
         self.delta: float = delta
         self.resume: bool = resume
-        self.writer: Optional[torch.utils.tensorboard.writer.SummaryWriter] = writer
         self.early_stopping: EarlyStopping = EarlyStopping(
             patience=self.patience,
             delta=self.delta,
@@ -116,11 +112,11 @@ class TrainingExperiment:
                 training data.
             val_dataloader (torch.utils.data.DataLoader):
                 A `DataLoader` instance for providing batches of
-                testing data.
+                validation data.
 
         Returns:
             Dict[str, List[float]]:
-                A dictionary containing the training and testing metrics including
+                A dictionary containing the training and validation metrics including
                 'train_loss', 'train_acc', 'val_loss', and 'val_acc'.
         """
         self.model.to(self.__class__.DEVICE)
@@ -169,22 +165,15 @@ class TrainingExperiment:
             results["val_loss"].append(val_loss)
             results["val_acc"].append(val_acc)
 
-            # Track experiments with SummaryWriter
-            if self.writer:
-                self.writer.add_scalars(
-                    main_tag="Loss",
-                    tag_scalar_dict={
-                        "train_loss": train_loss,
-                        "val_loss": val_loss,
-                    },
-                    global_step=epoch,
-                )
-                self.writer.add_scalars(
-                    main_tag="Accuracy",
-                    tag_scalar_dict={"train_acc": train_acc, "val_acc": val_acc},
-                    global_step=epoch,
-                )
-                self.writer.close()
+            mlflow.log_metrics(
+                metrics={
+                    "train_loss": train_loss,
+                    "val_loss": val_loss,
+                    "train_acc": train_acc,
+                    "val_acc": val_acc,
+                },
+                step=epoch,
+            )
 
             self.early_stopping(
                 epoch=epoch,
@@ -269,7 +258,7 @@ class TrainingExperiment:
         Args:
             dataloader (torch.utils.data.DataLoader):
                 A `DataLoader` instance for providing batches of
-                testing data.
+                validation data.
 
         Returns:
           Tuple[float, float]:

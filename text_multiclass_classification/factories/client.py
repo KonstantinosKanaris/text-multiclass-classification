@@ -1,10 +1,21 @@
-from typing import Iterator, Tuple, Optional
+from typing import Iterator, Optional
+
 import torch
 
 from text_multiclass_classification import logger
-from text_multiclass_classification.utils import constants, custom_exceptions, error_messages
-from text_multiclass_classification.factories.factories import ModelsFactory, OptimizersFactory
-from text_multiclass_classification.models.news_classifier import NewsClassifierWithCNN, NewsClassifierWithRNN
+from text_multiclass_classification.factories.factories import (
+    ModelsFactory,
+    OptimizersFactory,
+)
+from text_multiclass_classification.models.news_classifier import (
+    NewsClassifierWithCNN,
+    NewsClassifierWithRNN,
+)
+from text_multiclass_classification.utils import (
+    constants,
+    custom_exceptions,
+    error_messages,
+)
 
 
 class Client:
@@ -28,11 +39,11 @@ class Client:
         self.optimizers_factory: OptimizersFactory = OptimizersFactory()
 
     def models_client(
-            self,
-            model_name: str,
-            num_classes: int,
-            num_embeddings: int,
-            pretrained_embeddings: Optional[torch.Tensor] = None
+        self,
+        model_name: str,
+        num_classes: int,
+        num_embeddings: int,
+        pretrained_embeddings: Optional[torch.Tensor] = None,
     ) -> torch.nn.Module:
         """
         Returns a neural network model based on the provided model name.
@@ -106,7 +117,7 @@ class Client:
             name=model_name.lower(),
             num_classes=num_classes,
             num_embeddings=num_embeddings,
-            pretrained_embeddings=pretrained_embeddings
+            pretrained_embeddings=pretrained_embeddings,
         )
         return model
 
