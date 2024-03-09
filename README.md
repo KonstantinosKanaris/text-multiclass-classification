@@ -95,18 +95,68 @@ Python 3.10 is required.
     ```bash
     $ pipenv shell
     ```
-## Data Preparation 📂
-
 
 ## Experiment Configuration 🧪
 To conduct training experiments, define the configuration parameters for each experiment, including data paths and
 hyperparameters, in the configuration (YAML) file. Here's how you can define experiments:
 
+```yaml
+experiments:
+  -
+    name: experiment_1
+    data:
+        train_csv: ./data/train.csv
+    hyperparameters:
+      general:
+        num_epochs: 10
+        batch_size: 32
+      optimizer:
+        optimizer_name: adam
+        learning_rate: 0.001
+        weight_decay: 0.3
+      early_stopping:
+        patience: 3
+        delta: 0.008
+      model:
+        model_name: news_classifier_cnn
+        embeddings:
+  -
+    name: experiment_2
+    data:
+      train_csv: ./data/train.csv
+    hyperparameters:
+      general:
+        num_epochs: 2
+        batch_size: 32
+      optimizer:
+        optimizer_name: adam
+        learning_rate: 0.002
+        weight_decay: 0
+      early_stopping:
+        patience: 5
+        delta: 0
+      model:
+        model_name: news_classifier_rnn
+        embeddings: ./embeddings/glove.6B.100d.txt
+  ...
+```
 
 ## Training 🚀
 *Command Line*
+>
+>From the root directory of the project execute:
+>```bash
+>$ python -m text_multiclass_classification train --config ./configs/experiments.yaml
+>```
+>To resume training from a saved checkpoint execute:
+>```bash
+>$ python -m text_multiclass_classification train --config ./configs/experiments.yaml --resume_from_checkpoint yes
+>```
+>where the checkpoint directory path is defined in the configuration file.
 
-
-
-
-## TODOs 📝
+## Experiment Tracking 📉
+>Track your experiments with MLFlow by executing:
+>```bash
+>$ mlflow ui
+>```
+>
